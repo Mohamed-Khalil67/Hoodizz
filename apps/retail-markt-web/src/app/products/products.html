@@ -1,0 +1,16 @@
+<p>products works!</p>
+<pre>
+    {{ productStore | json }}
+</pre>
+
+@if(productStore.loading()) {
+    <div>loading... </div>
+}@else if (productStore.error()){
+   <div> {{ productStore.error() }} </div>
+}@else if(productStore.products().length){
+    <ul>
+        @for (product of productStore.products(); track product.id){
+            {{ product | json }}
+        } 
+    </ul>
+}
