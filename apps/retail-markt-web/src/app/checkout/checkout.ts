@@ -14,7 +14,7 @@ export class Checkout {
   stripeService = inject(Stripe);
 
    checkout() {
-      // console.log(this.cartStore.items());
+      console.log(this.cartStore.items());
       this.stripeService.createCheckoutSession().subscribe(({ url }) => {
         location.href = url;
       });

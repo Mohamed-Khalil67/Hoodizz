@@ -1,8 +1,11 @@
-import { CreateOrderInput } from './create-order.input';
-import { InputType, Field, PartialType } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql';
+import { OrderStatus } from '@prisma/client';
 
 @InputType()
-export class UpdateOrderInput extends PartialType(CreateOrderInput) {
+export class UpdateOrderInput {
   @Field(() => String)
   id!: string;
+
+  @Field(() => OrderStatus)
+  status!: OrderStatus;
 }

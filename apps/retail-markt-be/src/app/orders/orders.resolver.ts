@@ -2,6 +2,7 @@ import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { OrdersService } from './orders.service';
 import { Order } from './entities/order.entity';
 import { CreateOrderInput } from './dto/create-order.input';
+import { DeleteOrderResp } from './dto/delete-order-resp';
 import { UpdateOrderInput } from './dto/update-order.input';
 
 @Resolver(() => Order)
@@ -24,12 +25,12 @@ export class OrdersResolver {
   }
 
   @Mutation(() => Order)
-  updateOrder(@Args('updateOrderInput') updateOrderInput: UpdateOrderInput) {
+  updateOrder(@Args('updateOrderInput' , { type: () => UpdateOrderInput }) updateOrderInput: UpdateOrderInput) {
     return this.ordersService.update(updateOrderInput.id, updateOrderInput);
   }
 
-  @Mutation(() => Order)
-  removeOrder(@Args('id', { type: () => String }) id: string) {
-    return this.ordersService.remove(id);
+  @Mutation(() => DeleteOrderResp)
+  removeUnpaidOrder(@Args('id', { type: () => String }) id: string) {
+    return this.ordersService.removeUnpaid(id);
   }
 }
