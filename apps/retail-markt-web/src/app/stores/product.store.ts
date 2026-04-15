@@ -1,8 +1,9 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { Product } from '@prisma/client';
 import { Apollo, gql } from 'apollo-angular';
-import { catchError, EMPTY, map, tap } from 'rxjs';
+import { catchError, EMPTY, map, pipe, switchMap, tap } from 'rxjs';
 
 const GET_PRODUCTS = gql`
   query GetProduct {
@@ -13,6 +14,20 @@ const GET_PRODUCTS = gql`
       price
       image
       stripePriceId
+    }
+  }
+`;
+
+const GET_FEATURED_PRODUCTS = gql`
+  query GetFeaturedProducts($featured: Boolean) {
+    products(featured: $featured) {
+      id
+      name
+      description
+      price
+      image
+      stripePriceId
+      isFeatured
     }
   }
 `;
@@ -70,6 +85,24 @@ export const ProductStore = signalStore(
         )
         .subscribe();
     },
+    getFeaturedProducts: rxMethod<boolean>(
+      pipe(
+        switchMap((featured) => apollo.query<{ products: Product[] }>({
+          query: GET_FEATURED_PRODUCTS,
+          variables: { featured },
+        })),
+        tap({
+          next: ({ data }) =>
+            patchState(store, {
+              products: (data?.products ?? []) as Product[],
+              loading: false,
+              error: null,
+            }),
+          error: (error) =>
+            patchState(store, { error: error.message, loading: false }),
+        })
+      )
+    ),
     searchProducts(searchTerm: string) {
       patchState(store, { loading: true });
       apollo
