@@ -138,3 +138,7 @@ And join the Nx community:
 - In order to generate the schema file for GraphQL, we need to add autoSchemaFile: join(process.cwd(), 'src/schema.gql') in the app.module.ts file in the GraphQLModule.forRoot() method. Also we need to import join from node:path. After that we can run the application and the schema file will be generated in the src folder. Also NX Daomon needs to be activated or restarted in order to see the changes in the schema file.
 
 - In order to add Angular, nx add @nx/angular with changing a variable in tsconfig.base.json to false.
+
+- Firebase E2E Authentication flow, npm install --legacy-peer-deps firebase @angular/fire
+
+![alt text](image.png)

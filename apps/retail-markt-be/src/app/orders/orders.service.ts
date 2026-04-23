@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOrderInput } from './dto/create-order.input';
+import {
+  CreateOrderInput,
+  CreateOrderServiceDto,
+} from './dto/create-order.input';
 import { UpdateOrderInput } from './dto/update-order.input';
 import { PrismaService } from '../prisma/prisma.service';
 import { DeleteOrderResp } from './dto/delete-order-resp';
@@ -7,11 +10,9 @@ import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {
-
-  }
-  create(createOrderInput: CreateOrderInput) {
-    const { totalAmount, items } = createOrderInput;
+  constructor(private prisma: PrismaService) {}
+  create(createOrderInput: CreateOrderServiceDto) {
+    const { totalAmount, items, userId } = createOrderInput;
     return this.prisma.order.create({
       data: {
         totalAmount,
@@ -22,14 +23,15 @@ export class OrdersService {
             product: {
               connect: { id: item.productId },
             },
-          }))
-        }
+          })),
+        },
+        userId,
       },
       include: {
         items: {
           include: {
             product: true,
-          }
+          },
         },
       },
     });
@@ -41,7 +43,7 @@ export class OrdersService {
         items: {
           include: {
             product: true,
-          }
+          },
         },
       },
     });
@@ -54,7 +56,7 @@ export class OrdersService {
         items: {
           include: {
             product: true,
-          }
+          },
         },
       },
     });
@@ -70,7 +72,7 @@ export class OrdersService {
         items: {
           include: {
             product: true,
-          }
+          },
         },
       },
     });
@@ -101,6 +103,6 @@ export class OrdersService {
       success: false,
       orderId: id,
       error: `Only orders with status ${OrderStatus.PAYMENT_REQUIRED} can be removed.`,
-    }
+    };
   }
-};
+}

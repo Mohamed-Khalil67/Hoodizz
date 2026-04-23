@@ -2,27 +2,36 @@ import { Injectable } from '@nestjs/common';
 import { CreateCheckoutDto } from './dto/create-checkout.dto';
 import { OrdersService } from '../orders/orders.service';
 import Stripe from 'stripe';
+import { FirebaseService } from '../firebase/firebase.service';
 
 const stripeSecret = process.env.STRIPE_SECRET;
 
 if (!stripeSecret) {
-  throw new Error('Missing stripe secret')
+  throw new Error('Missing stripe secret');
 }
 
 // Initialize Stripe (v22 CJS export is a callable function, not a class)
-const stripe = Stripe(stripeSecret)
+const stripe = Stripe(stripeSecret);
 
 @Injectable()
 export class CheckoutService {
-  constructor(private ordersService: OrdersService) {}
-
-  async create(createCheckoutDto: CreateCheckoutDto) {
+  constructor(
+    private ordersService: OrdersService,
+    private firebaseService: FirebaseService,
+  ) {}
+  async create(createCheckoutDto: CreateCheckoutDto, token: string) {
+    let userId: string | undefined;
+    if (token) {
+      userId = await this.firebaseService.verifyToken(token);
+    }
+    console.log({ token, userId });
     const order = await this.ordersService.create({
       items: createCheckoutDto.items,
-      totalAmount: createCheckoutDto.totalAmount
+      totalAmount: createCheckoutDto.totalAmount,
+      userId,
     });
 
-    console.log('Order created for stripe checkout:',  order.id);
+    console.log('Order created for stripe checkout:', order.id);
 
     const session = await stripe.checkout.sessions.create({
       line_items: createCheckoutDto.items.map((item) => ({
@@ -39,14 +48,14 @@ export class CheckoutService {
       success_url: `${process.env.FRONTEND_URL}/checkout/success?orderId=${order.id}`,
       cancel_url: `${process.env.FRONTEND_URL}/checkout/cancel?orderId=${order.id}`,
       metadata: {
-        orderId: order.id
-      }
+        orderId: order.id,
+      },
     });
 
     return {
       url: session.url,
       sessionId: session.id,
-      orderId: order.id
-    }
+      orderId: order.id,
+    };
   }
 }
