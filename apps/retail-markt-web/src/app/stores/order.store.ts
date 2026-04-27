@@ -3,18 +3,8 @@ import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { Order, OrderItem, OrderStatus, Product } from '@prisma/client';
 import { Apollo, gql } from 'apollo-angular';
-import {
-  catchError,
-  EMPTY,
-  filter,
-  from,
-  map,
-  pipe,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
-import { AuthService } from '../auth/auth';
+import { catchError, EMPTY, from, map, pipe, switchMap, tap } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
 
 const GET_ORDER = gql`
   query GetOrder($id: String!) {
@@ -133,16 +123,13 @@ export const OrderStore = signalStore(
         );
     },
     getUserOrders() {
-      patchState(store, { loading: true });
-      return auth.currentUser$.pipe(
-        filter((user) => !!user),
-        take(1),
-        switchMap((user) => from(user.getIdToken())),
+      patchState(store, { loading: true, error: null });
+      return from(auth.getToken()).pipe(
         switchMap((token) => {
           if (!token) {
             throw new Error('User not authenticated');
           }
-          console.log('token in orderStore for getUserOrders: ', token);
+          // console.log('token in orderStore for getUserOrders: ', token);
           return apollo.query<{ userOrders: OrderWithItems[] }>({
             query: GET_USER_ORDERS,
             variables: {

@@ -21,12 +21,12 @@ export class OrdersResolver {
 
   @Query(() => [Order], { name: 'userOrders' })
   async findUserOrders(@Args('token', { type: () => String }) token: string) {
-    console.log('token in backend userOrders:', token);
+    // console.log('token in backend userOrders:', token);
     const userId = await this.firebaseService.verifyToken(token);
     if (!userId) {
       throw new UnauthorizedException('Invalid or expired Token');
     }
-    console.log('userId in backend userOrders:', userId);
+    // console.log('userId in backend userOrders:', userId);
     return this.ordersService.findUserOrders(userId);
   }
 

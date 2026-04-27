@@ -24,7 +24,7 @@ export class Products {
       this.searchSubject
         .pipe(debounceTime(500), distinctUntilChanged(), this.destroyed()) // if the user types cat, removes quickly and type cat again, it will not trigger the search twice
         .subscribe((term) => {
-          console.log({term});
+          // console.log({term});
           this.productStore.searchProducts(term);
         });
     });

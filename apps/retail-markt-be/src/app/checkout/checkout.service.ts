@@ -24,14 +24,14 @@ export class CheckoutService {
     if (token) {
       userId = await this.firebaseService.verifyToken(token);
     }
-    console.log({ token, userId });
+    // console.log({ token, userId });
     const order = await this.ordersService.create({
       items: createCheckoutDto.items,
       totalAmount: createCheckoutDto.totalAmount,
       userId,
     });
 
-    console.log('Order created for stripe checkout:', order.id);
+    // console.log('Order created for stripe checkout:', order.id);
 
     const session = await stripe.checkout.sessions.create({
       line_items: createCheckoutDto.items.map((item) => ({

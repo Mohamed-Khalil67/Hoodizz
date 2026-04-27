@@ -20,9 +20,7 @@ import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideAnalytics, getAnalytics } from '@angular/fire/analytics';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 
-
-
-console.log('Environment:', environment.firebase);
+// console.log('Environment:', environment.firebase);
 
 export const appConfig: ApplicationConfig = {
   providers: [

@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { CartStore } from '../stores/cart.store';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../auth/auth';
+import { AuthService } from '../auth/auth.service';
 import { from, switchMap } from 'rxjs';
 import { environment } from '../environments/environment';
 

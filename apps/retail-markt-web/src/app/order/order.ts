@@ -3,11 +3,11 @@ import { OrderStore } from '../stores/order.store';
 import { OrderDetail } from '../components/order-detail/order-detail';
 import { pipe, switchMap } from 'rxjs';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-order',
-  imports: [OrderDetail],
+  imports: [OrderDetail, RouterLink],
   templateUrl: './order.html',
   styleUrl: './order.scss',
 })
