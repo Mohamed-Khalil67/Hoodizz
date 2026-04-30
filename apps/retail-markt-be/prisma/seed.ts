@@ -6,14 +6,14 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // console.log('--- Debugging Environment ---');
-  // console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+  console.log('--- Debugging Environment ---');
+  console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
 
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL is missing! Prisma cannot start.');
   }
 
-  // console.log('Start seeding...');
+  console.log('Start seeding...');
 
   // Check existing products
   const existingProducts = await prisma.product.findMany({
@@ -23,9 +23,9 @@ async function main() {
     existingProducts.map((p) => p.stripePriceId),
   );
 
-  // console.log({ existingProducts });
+  console.log({ existingProducts });
 
-  // console.log({ productsList });
+  console.log({ productsList });
 
   // Create only products that don't exist
   for (const product of productsList) {
@@ -43,13 +43,13 @@ async function main() {
           updatedAt: productData.updatedAt,
         },
       });
-      // console.log(`Created product: ${productData.name}`);
+      console.log(`Created product: ${productData.name}`);
     } else {
-      // console.log(`Skipping existing product: ${productData.name}`);
+      console.log(`Skipping existing product: ${productData.name}`);
     }
   }
 
-  // console.log('Seeding finished.');
+  console.log('Seeding finished.');
 }
 
 main()
