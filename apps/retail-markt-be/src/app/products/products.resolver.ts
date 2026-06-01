@@ -9,20 +9,26 @@ export class ProductsResolver {
   constructor(private readonly productsService: ProductsService) {}
 
   @Mutation(() => Product)
-  createProduct(
-    @Args('createProductInput') createProductInput: CreateProductInput,
-  ) {
+  createProduct(@Args('createProductInput') createProductInput: CreateProductInput) {
     return this.productsService.create(createProductInput);
   }
 
   @Query(() => [Product], { name: 'products' })
-  findAll(@Args('featured', { type: () => Boolean, nullable: true }) featured?: boolean) {
-    return this.productsService.findAll({ featured });
+  findAll(
+    @Args('featured',  { type: () => Boolean, nullable: true }) featured?: boolean,
+    @Args('category',  { type: () => String,  nullable: true }) category?: string,
+  ) {
+    return this.productsService.findAll({ featured, category });
   }
 
   @Query(() => Product, { name: 'product' })
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.productsService.findOne(id);
+  }
+
+  @Query(() => [String], { name: 'categories' })
+  getCategories() {
+    return this.productsService.getCategories();
   }
 
   @Query(() => [Product], { name: 'searchProducts' })
@@ -31,13 +37,8 @@ export class ProductsResolver {
   }
 
   @Mutation(() => Product)
-  updateProduct(
-    @Args('updateProductInput') updateProductInput: UpdateProductInput,
-  ) {
-    return this.productsService.update(
-      updateProductInput.id,
-      updateProductInput,
-    );
+  updateProduct(@Args('updateProductInput') updateProductInput: UpdateProductInput) {
+    return this.productsService.update(updateProductInput.id, updateProductInput);
   }
 
   @Mutation(() => Product)

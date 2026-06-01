@@ -1,0 +1,40 @@
+/* ---- Status page (used by checkout success) ---- */
+.status-page {
+  max-width: 600px;
+  margin-inline: auto;
+  padding-block: 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.status-page__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+}
+.status-page__icon--error   { background: #fff0ee; color: var(--accent); }
+.status-page__icon--success { background: #f0fff4; color: #1a7a3c; }
+
+.status-page__title    { font-family: var(--display); font-size: 2rem; text-transform: uppercase; }
+.status-page__subtitle { color: var(--muted); max-width: 380px; line-height: 1.6; }
+
+.status-page__card       { width: 100%; text-align: left; background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.status-page__card-title { font-weight: 700; margin-bottom: 1rem; }
+.status-page__order-id   { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; font-family: monospace; }
+.status-page__note       { font-size: 0.85rem; color: var(--muted); }
+
+.status-page__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}

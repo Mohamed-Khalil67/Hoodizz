@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import untilDestroyed from '../utils/untilDestroyed';
 import { CartStore } from '../stores/cart.store';
+
 @Component({
   selector: 'app-products',
   imports: [ProductCard, FormsModule],
@@ -12,27 +13,42 @@ import { CartStore } from '../stores/cart.store';
   styleUrl: './products.scss',
 })
 export class Products {
-  searchTerm = '';
-  productStore = inject(ProductStore);
-  cartStore = inject(CartStore);
-  searchSubject = new Subject<string>();
-  destroyed = untilDestroyed();
+  productStore     = inject(ProductStore);
+  cartStore        = inject(CartStore);
+  searchTerm       = '';
+  selectedCategory = 'all';
+  searchSubject    = new Subject<string>();
+  destroyed        = untilDestroyed();
 
   constructor() {
+    // Load products and categories from backend on init
     this.productStore.loadProducts();
+    this.productStore.loadCategories();
+
     afterNextRender(() => {
       this.searchSubject
-        .pipe(debounceTime(500), distinctUntilChanged(), this.destroyed()) // if the user types cat, removes quickly and type cat again, it will not trigger the search twice
+        .pipe(debounceTime(500), distinctUntilChanged(), this.destroyed())
         .subscribe((term) => {
-          // console.log({term});
-          this.productStore.searchProducts(term);
+          if (term) {
+            this.productStore.searchProducts(term);
+          } else {
+            // If search cleared, reload with current category
+            const cat = this.selectedCategory === 'all' ? undefined : this.selectedCategory;
+            this.productStore.loadProducts(cat);
+          }
         });
     });
   }
 
-  // adding debounce time to avoid triggering search on every keystroke
-
   onSearch(term: string) {
     this.searchSubject.next(term);
+  }
+
+  selectCategory(category: string) {
+    this.selectedCategory = category;
+    this.searchTerm = '';
+    // Call backend with selected category (undefined = all)
+    const cat = category === 'all' ? undefined : category;
+    this.productStore.loadProducts(cat);
   }
 }

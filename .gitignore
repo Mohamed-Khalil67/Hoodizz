@@ -48,3 +48,4 @@ test-output
 .env
 
 .claude
+.agents

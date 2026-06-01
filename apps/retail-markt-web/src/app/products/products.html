@@ -1,43 +1,89 @@
-<div class="container mx-auto px-4">
-  <div class="mb-4">
-    <!-- search input -->
-    <input
-      type="text"
-      placeholder="Search products..."
-      class="input input-bordered w-full max-w-xs"
-      [(ngModel)]="searchTerm"
-      (ngModelChange)="onSearch(searchTerm)"
-    />
-  </div>
-  @if(productStore.loading()) {
-  <div>loading...</div>
-  }@else if (productStore.error()){
-  <!-- error loading products -->
-  <div class="alert alert-error">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="stroke-current shrink-0 h-6 w-6"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-    <span>Error: {{ productStore.error() }}</span>
-  </div>
-  }@else if(productStore.products().length){
-  <!-- products grid -->
-  <div
-    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-fr"
-  >
-    <!-- loop over products -->
-    @for (product of productStore.products(); track product.id){
-    <app-product-card (addToCart)="cartStore.addToCartStore($event)" [product]="product" />
+<section class="products-page">
+  <div class="container">
+
+    <!-- Page header -->
+    <div class="products-page__header">
+      <span class="products-page__hand">The Collection</span>
+      <h1 class="products-page__title">All Products</h1>
+    </div>
+
+    <!-- Toolbar: search + category filters on same row -->
+    <div class="products-page__toolbar">
+
+      <!-- Search -->
+      <div class="products-page__search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m20 20-3-3"></path>
+        </svg>
+        <input
+          type="text"
+          placeholder="Search products…"
+          class="products-page__search-input"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearch(searchTerm)"
+        />
+      </div>
+
+      <!-- Category filters (from backend) -->
+      <div class="products-page__categories">
+
+        <!-- Always show "All" first -->
+        <button
+          class="products-page__cat-btn"
+          [class.products-page__cat-btn--active]="selectedCategory === 'all'"
+          (click)="selectCategory('all')">
+          All
+        </button>
+
+        <!-- Dynamic categories from DB -->
+        @for (cat of productStore.categories(); track cat) {
+          <button
+            class="products-page__cat-btn"
+            [class.products-page__cat-btn--active]="selectedCategory === cat"
+            (click)="selectCategory(cat)">
+            {{ cat }}
+          </button>
+        }
+
+      </div>
+    </div>
+
+    <!-- Loading -->
+    @if (productStore.loading()) {
+      <div class="products-grid">
+        @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
+          <div class="product-skeleton">
+            <div class="skeleton product-skeleton__img"></div>
+            <div class="product-skeleton__body">
+              <div class="skeleton product-skeleton__line"></div>
+              <div class="skeleton product-skeleton__line product-skeleton__line--short"></div>
+            </div>
+          </div>
+        }
+      </div>
+
+    <!-- Error -->
+    } @else if (productStore.error()) {
+      <div class="alert alert--error">{{ productStore.error() }}</div>
+
+    <!-- Products -->
+    } @else if (productStore.products().length) {
+      <div class="products-grid">
+        @for (product of productStore.products(); track product.id) {
+          <app-product-card [product]="product" (addToCart)="$event" />
+        }
+      </div>
+
+    <!-- Empty -->
+    } @else {
+      <div class="empty-state">
+        <div class="empty-state__icon">◎</div>
+        <h2 class="empty-state__title">No products found</h2>
+        <p class="empty-state__text">Try a different search or category.</p>
+      </div>
     }
+
   </div>
-  }
-</div>
+</section>

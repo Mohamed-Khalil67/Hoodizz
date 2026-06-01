@@ -12,11 +12,11 @@ import { RouterModule } from '@angular/router';
 export class Cart {
   cartStore = inject(CartStore);
 
-  updateQuantity(productId: string, event: Event) {
-    const input = event.target as HTMLInputElement;
+  updateQuantity(productId: string, selectedSize: string, event: Event) {
+    const input    = event.target as HTMLInputElement;
     const quantity = Number(input.value);
     if (quantity > 0) {
-      this.cartStore.updateQuantity(productId, quantity);
+      this.cartStore.updateQuantity(productId, selectedSize, quantity);
     }
   }
 }

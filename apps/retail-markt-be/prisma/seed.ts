@@ -6,50 +6,21 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('--- Debugging Environment ---');
-  console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
-
   if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is missing! Prisma cannot start.');
+    throw new Error('DATABASE_URL is missing!');
   }
 
-  console.log('Start seeding...');
+  console.log('🌱 Seeding Hoodizz products...');
 
-  // Check existing products
-  const existingProducts = await prisma.product.findMany({
-    select: { stripePriceId: true },
-  });
-  const existingPriceIds = new Set(
-    existingProducts.map((p) => p.stripePriceId),
-  );
+  // Clear existing products first to avoid duplicates
+  await prisma.product.deleteMany();
 
-  console.log({ existingProducts });
-
-  console.log({ productsList });
-
-  // Create only products that don't exist
   for (const product of productsList) {
-    const { ...productData } = product;
-    if (!existingPriceIds.has(productData.stripePriceId)) {
-      await prisma.product.create({
-        data: {
-          name: productData.name,
-          description: productData.description,
-          price: productData.price,
-          image: productData.image,
-          stripePriceId: productData.stripePriceId,
-          isFeatured: productData.isFeatured,
-          createdAt: productData.createdAt,
-          updatedAt: productData.updatedAt,
-        },
-      });
-      console.log(`Created product: ${productData.name}`);
-    } else {
-      console.log(`Skipping existing product: ${productData.name}`);
-    }
+    await prisma.product.create({ data: product });
+    console.log(`✔ Created: ${product.name}`);
   }
 
-  console.log('Seeding finished.');
+  console.log(`\n✅ Seeding complete. ${productsList.length} products added.`);
 }
 
 main()

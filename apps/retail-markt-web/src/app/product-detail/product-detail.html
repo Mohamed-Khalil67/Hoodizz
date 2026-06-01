@@ -1,0 +1,112 @@
+<div class="container">
+
+  <!-- Back link -->
+  <a routerLink="/products" class="pd-back">← Back to products</a>
+
+  <!-- Loading state -->
+  @if (productStore.loading()) {
+    <div class="pd-skeleton">
+      <div class="skeleton pd-skeleton__image"></div>
+      <div class="pd-skeleton__info">
+        <div class="skeleton pd-skeleton__line pd-skeleton__line--title"></div>
+        <div class="skeleton pd-skeleton__line"></div>
+        <div class="skeleton pd-skeleton__line pd-skeleton__line--short"></div>
+      </div>
+    </div>
+  }
+
+  <!-- Error state -->
+  @else if (productStore.error()) {
+    <div class="alert alert--error">{{ productStore.error() }}</div>
+  }
+
+  <!-- Product detail -->
+  @else if (productStore.selectedProduct(); as product) {
+    <div class="pd">
+
+      <!-- Image -->
+      <div class="pd__image-wrap">
+        <img [src]="product.images[0]" [alt]="product.name" class="pd__image" />
+      </div>
+
+      <!-- Info -->
+      <div class="pd__info">
+
+        <p class="pd__category">{{ product.category }}</p>
+        <h1 class="pd__name">{{ product.name }}</h1>
+        <p class="pd__price">${{ product.price }}</p>
+        <p class="pd__description">{{ product.description }}</p>
+
+        <div class="divider"></div>
+
+        <!-- Size selector -->
+        @if (product.sizes.length > 0) {
+          <div class="pd__section">
+            <p class="pd__section-label">
+              Size
+              @if (product.sizes.length > 0 && !selectedSize()) {
+                <span class="pd__required">— please select</span>
+              }
+            </p>
+            <div class="pd__sizes">
+              @for (size of product.sizes; track size) {
+                <button
+                  class="pd__size-btn"
+                  [class.pd__size-btn--active]="selectedSize() === size"
+                  (click)="selectSize(size)">
+                  {{ size }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Color selector -->
+        @if (product.colors.length > 0) {
+          <div class="pd__section">
+            <p class="pd__section-label">
+              Color
+              @if (!selectedColor()) {
+                <span class="pd__required">— please select</span>
+              }
+            </p>
+            <div class="pd__colors">
+              @for (color of product.colors; track color) {
+                <button
+                  class="pd__color-btn"
+                  [class.pd__color-btn--active]="selectedColor() === color"
+                  [style.background]="color"
+                  (click)="selectColor(color)"
+                  [attr.aria-label]="color">
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="divider"></div>
+
+        <!-- Stock -->
+        <p class="pd__stock">
+          @if (product.stock > 10) {
+            <span class="pd__stock--ok">✓ In stock</span>
+          } @else if (product.stock > 0) {
+            <span class="pd__stock--low">Only {{ product.stock }} left</span>
+          } @else {
+            <span class="pd__stock--out">Out of stock</span>
+          }
+        </p>
+
+        <!-- Add to cart -->
+        <button
+          class="add-btn pd__add-btn"
+          (click)="addToCart(product)"
+          [disabled]="!canAdd || product.stock === 0">
+          @if (added()) { ✓ Added to cart } @else { Add to Cart }
+        </button>
+
+      </div>
+    </div>
+  }
+
+</div>

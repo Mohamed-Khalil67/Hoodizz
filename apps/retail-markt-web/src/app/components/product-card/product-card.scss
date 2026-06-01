@@ -1,21 +1,145 @@
-.add-to-cart-animation {
-  animation: addToCart 0.5s ease-in-out;
+/* ---- Card wrapper ---- */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
 }
 
-@keyframes addToCart {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+/* ---- Thumbnail ---- */
+.product-card__thumb {
+  display: block;
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background: var(--card);
+  border-radius: 1rem;
+  overflow: hidden;
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
-.btn-primary {
-  &.adding {
-    @apply add-to-cart-animation;
-  }
+.product-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s;
+}
+.product-card:hover .product-card__img { transform: scale(1.04); }
+
+/* ---- Wishlist heart ---- */
+.product-card__heart {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  color: var(--fg);
+}
+.product-card__heart:hover { background: var(--accent); color: #fff; }
+
+/* ---- Name + price ---- */
+.product-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.product-card__name {
+  display: block;
+  font-family: var(--display);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  text-decoration: none;
+  line-height: 1.2;
+  transition: color 0.15s;
+}
+.product-card__name:hover { color: var(--accent); }
+
+.product-card__price {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+
+/* ---- Section wrapper (colors or sizes + their error) ---- */
+.product-card__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* ---- Color swatches ---- */
+.product-card__colors {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.product-card__color {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+}
+.product-card__color:hover { transform: scale(1.2); }
+.product-card__color--active {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--fg);
+}
+
+/* ---- Size buttons ---- */
+.product-card__sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.product-card__size {
+  height: 28px;
+  min-width: 34px;
+  padding-inline: 0.4rem;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.product-card__size:hover { border-color: var(--fg); color: var(--fg); }
+.product-card__size--active {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
+
+/* ---- Error text — always rendered, invisible until needed ---- */
+/* This reserves the space so the button NEVER moves */
+.product-card__error {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent);
+  height: 1rem;           /* fixed height always reserved */
+  visibility: hidden;     /* hidden but takes up space */
+  margin: 0;
+}
+.product-card__error--visible {
+  visibility: visible;    /* reveal without shifting layout */
+}
+
+/* ---- CTA button — pinned to bottom ---- */
+.product-card__cta {
+  margin-top: auto;   /* pushes to bottom of flex column */
 }

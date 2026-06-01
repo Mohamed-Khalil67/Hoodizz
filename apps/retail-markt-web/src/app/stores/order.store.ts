@@ -6,6 +6,19 @@ import { Apollo, gql } from 'apollo-angular';
 import { catchError, EMPTY, from, map, pipe, switchMap, tap } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 
+const ORDER_ITEM_FIELDS = `
+  id
+  quantity
+  price
+  size
+  color
+  product {
+    id
+    name
+    images
+  }
+`;
+
 const GET_ORDER = gql`
   query GetOrder($id: String!) {
     order(id: $id) {
@@ -13,14 +26,7 @@ const GET_ORDER = gql`
       totalAmount
       status
       items {
-        id
-        quantity
-        price
-        product {
-          id
-          name
-          image
-        }
+        ${ORDER_ITEM_FIELDS}
       }
       createdAt
     }
@@ -34,14 +40,7 @@ const UPDATE_ORDER = gql`
       totalAmount
       status
       items {
-        id
-        quantity
-        price
-        product {
-          id
-          name
-          image
-        }
+        ${ORDER_ITEM_FIELDS}
       }
       createdAt
     }
@@ -65,14 +64,7 @@ const GET_USER_ORDERS = gql`
       totalAmount
       status
       items {
-        id
-        quantity
-        price
-        product {
-          id
-          name
-          image
-        }
+        ${ORDER_ITEM_FIELDS}
       }
       createdAt
     }
@@ -129,12 +121,9 @@ export const OrderStore = signalStore(
           if (!token) {
             throw new Error('User not authenticated');
           }
-          // console.log('token in orderStore for getUserOrders: ', token);
           return apollo.query<{ userOrders: OrderWithItems[] }>({
             query: GET_USER_ORDERS,
-            variables: {
-              token,
-            },
+            variables: { token },
           });
         }),
         tap((result) => {
@@ -155,9 +144,7 @@ export const OrderStore = signalStore(
         switchMap(({ id, status }) =>
           apollo.mutate<{ updateOrder: OrderWithItems }>({
             mutation: UPDATE_ORDER,
-            variables: {
-              updateOrder: { id, status },
-            },
+            variables: { updateOrder: { id, status } },
           }),
         ),
       ),
@@ -167,14 +154,11 @@ export const OrderStore = signalStore(
         switchMap((id) =>
           apollo.mutate<{ updateOrder: OrderWithItems }>({
             mutation: DELETE_UNPAID_ORDER,
-            variables: {
-              id,
-            },
+            variables: { id },
           }),
         ),
         tap({
           next: ({ data }) => {
-            console.log('Unpaid order deleted:', { data });
             patchState(store, { error: null });
           },
           error: (error) => patchState(store, { error: error.message }),

@@ -17,6 +17,8 @@ import { OrdersModule } from './orders/orders.module';
         process.cwd(),
         'apps/retail-markt-be/dist/schema.gql',
       ),
+      playground: true,
+      introspection: true,
     }),
     ProductsModule,
     CheckoutModule,

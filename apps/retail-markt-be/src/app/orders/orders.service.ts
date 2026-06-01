@@ -8,41 +8,34 @@ import { OrderStatus } from '@prisma/client';
 @Injectable()
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
+
   create(createOrderInput: CreateOrderServiceDto) {
     const { totalAmount, items, userId } = createOrderInput;
     return this.prisma.order.create({
       data: {
         totalAmount,
+        userId,
         items: {
           create: items.map((item) => ({
             quantity: item.quantity,
-            price: item.price,
+            price:    item.price,
+            size:     item.size,    // ← now saved
+            color:    item.color,   // ← now saved
             product: {
               connect: { id: item.productId },
             },
           })),
         },
-        userId,
       },
       include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
+        items: { include: { product: true } },
       },
     });
   }
 
   findAll() {
     return this.prisma.order.findMany({
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
+      include: { items: { include: { product: true } } },
     });
   }
 
@@ -50,73 +43,40 @@ export class OrdersService {
     return this.prisma.order.findMany({
       where: {
         userId,
-        status: {
-          not: 'PAYMENT_REQUIRED',
-        },
+        status: { not: 'PAYMENT_REQUIRED' },
       },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      include: { items: { include: { product: true } } },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   findOne(id: string) {
     return this.prisma.order.findUnique({
       where: { id },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
+      include: { items: { include: { product: true } } },
     });
   }
 
   update(id: string, updateOrderInput: UpdateOrderInput) {
     return this.prisma.order.update({
       where: { id },
-      data: {
-        ...updateOrderInput,
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
+      data: { ...updateOrderInput },
+      include: { items: { include: { product: true } } },
     });
   }
 
   async removeUnpaid(id: string): Promise<DeleteOrderResp> {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
-    });
+    const order = await this.prisma.order.findUnique({ where: { id } });
 
     if (!order) {
-      return {
-        success: true,
-        orderId: id,
-      };
+      return { success: true, orderId: id };
     }
 
     if (order.status === OrderStatus.PAYMENT_REQUIRED) {
-      await this.prisma.order.delete({
-        where: { id },
-      });
-      return {
-        success: true,
-        orderId: id,
-      };
+      await this.prisma.order.delete({ where: { id } });
+      return { success: true, orderId: id };
     }
+
     return {
       success: false,
       orderId: id,

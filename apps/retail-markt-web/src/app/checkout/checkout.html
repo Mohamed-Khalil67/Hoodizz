@@ -1,26 +1,50 @@
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-  <div class="space-y-6">
-    <h2 class="text-2xl font-bold">Order Summary</h2>
-    @for (item of cartStore.items(); track item.id) {
-    <div class="flex justify-between items-center">
-      <div>
-        <p class="font-semibold">{{ item.name }}</p>
-        <p class="text-sm text-gray-300">Quantity: {{ item.quantity }}</p>
-      </div>
-      <p>${{ item.price * item.quantity }}</p>
+<div class="container checkout-page">
+
+  <!-- Order summary -->
+  <div class="checkout-summary">
+    <h2 class="checkout-summary__title">Order Summary</h2>
+
+    <div class="checkout-summary__items">
+      @for (item of cartStore.items(); track item.id + item.selectedSize) {
+        <div class="checkout-summary__item">
+
+          <!-- Image + name + variants -->
+          <div class="checkout-summary__item-info">
+            <div class="checkout-summary__img-wrap">
+              <img [src]="item.images[0]" [alt]="item.name" class="checkout-summary__img" />
+            </div>
+            <div>
+              <p class="checkout-summary__item-name">{{ item.name }}</p>
+              <div class="checkout-summary__item-variants">
+                <span class="checkout-summary__tag">{{ item.selectedSize }}</span>
+                <span class="checkout-summary__tag checkout-summary__tag--color">
+                  <span class="checkout-summary__color-dot" [style.background]="item.selectedColor"></span>
+                </span>
+                <span class="checkout-summary__item-qty">× {{ item.quantity }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="checkout-summary__item-price">
+            ${{ item.price * item.quantity | number : "1.2-2" }}
+          </p>
+        </div>
+      }
     </div>
-    }
+
     <div class="divider"></div>
-    <div class="flex justify-between items-center font-bold">
-      <p>Total</p>
-      <p>${{ cartStore.totalAmount() | number : "1.2-2" }}</p>
+
+    <div class="checkout-summary__total">
+      <span>Total</span>
+      <strong>${{ cartStore.totalAmount() | number : "1.2-2" }}</strong>
     </div>
   </div>
 
-  <div class="space-y-6">
-    <h2 class="text-2xl font-bold">Payment</h2>
-    <button class="btn btn-primary w-full" (click)="checkout()">
-      Pay with Stripe
-    </button>
+  <!-- Payment -->
+  <div class="checkout-payment">
+    <h2 class="checkout-payment__title">Payment</h2>
+    <button class="add-btn" (click)="checkout()">Pay with Stripe</button>
+    <p class="checkout-payment__note">Redirecting to Stripe's secure checkout.</p>
   </div>
+
 </div>

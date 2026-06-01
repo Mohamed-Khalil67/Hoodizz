@@ -1,13 +1,66 @@
-<div
-  class="card h-full bg-slate-900 shadow-xl hover:-translate-y-2 duration-200"
->
-  <figure><img [src]="product().image" [alt]="product().name" /></figure>
-  <div class="card-body">
-    <h2 class="card-title">{{ product().name }}</h2>
-    <p>{{ product().description }}</p>
-    <div class="card-actions justify-between items-center">
-      <span class="text-xl font-bold">${{ product().price }}</span>
-      <button (click)="onAddToCart(product())" class="btn btn-primary">Add to Cart</button>
+<article class="product-card">
+
+  <!-- Image -->
+  <a [routerLink]="['/products', product().id]" class="product-card__thumb">
+    <img [src]="product().images[0]" [alt]="product().name" class="product-card__img" />
+    <button class="product-card__heart" aria-label="Wishlist" (click)="$event.preventDefault()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
+      </svg>
+    </button>
+  </a>
+
+  <!-- Name + price -->
+  <div class="product-card__row">
+    <div>
+      <a [routerLink]="['/products', product().id]" class="product-card__name">
+        {{ product().name }}
+      </a>
+      <div class="product-card__price">${{ product().price }}</div>
     </div>
   </div>
-</div>
+
+  <!-- Color swatches + error -->
+  <div class="product-card__section">
+    <div class="product-card__colors">
+      @for (color of product().colors; track color) {
+        <button
+          class="product-card__color"
+          [class.product-card__color--active]="selectedColor() === color"
+          [style.background]="color"
+          (click)="selectColor(color)"
+          [attr.aria-label]="color">
+        </button>
+      }
+    </div>
+    <!-- Error shown only after failed attempt -->
+    <p class="product-card__error" [class.product-card__error--visible]="attempted() && !selectedColor()">
+      Select a color
+    </p>
+  </div>
+
+  <!-- Size buttons + error -->
+  <div class="product-card__section">
+    <div class="product-card__sizes">
+      @for (size of product().sizes; track size) {
+        <button
+          class="product-card__size"
+          [class.product-card__size--active]="selectedSize() === size"
+          (click)="selectSize(size)">
+          {{ size }}
+        </button>
+      }
+    </div>
+    <!-- Error shown only after failed attempt -->
+    <p class="product-card__error" [class.product-card__error--visible]="attempted() && !selectedSize()">
+      Select a size
+    </p>
+  </div>
+
+  <!-- Add to cart — always pinned to bottom via margin-top: auto -->
+  <button class="add-btn product-card__cta" (click)="onAddToCart()">
+    Add to Cart
+  </button>
+
+</article>

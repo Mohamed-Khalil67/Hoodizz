@@ -1,0 +1,165 @@
+/* ---- Back link ---- */
+.pd-back {
+  display: inline-block;
+  margin-block: 2rem 1.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+.pd-back:hover { color: var(--fg); }
+
+/* ---- Product detail layout ---- */
+.pd {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+  padding-bottom: 5rem;
+}
+
+@media (max-width: 780px) {
+  .pd {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+/* ---- Image ---- */
+.pd__image-wrap {
+  position: sticky;
+  top: 100px;
+  aspect-ratio: 3 / 4;
+  background: var(--card);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.pd__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- Info panel ---- */
+.pd__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.pd__category {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+}
+
+.pd__name {
+  font-family: var(--display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.pd__price {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.pd__description {
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* ---- Section (size / color) ---- */
+.pd__section { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.pd__section-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.pd__required {
+  font-weight: 400;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ---- Size buttons ---- */
+.pd__sizes { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.pd__size-btn {
+  min-width: 44px;
+  height: 44px;
+  padding-inline: 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: #fff;
+  color: var(--fg);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.pd__size-btn:hover { border-color: var(--fg); }
+.pd__size-btn--active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+/* ---- Color swatches ---- */
+.pd__colors { display: flex; gap: 0.5rem; }
+
+.pd__color-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.pd__color-btn:hover { transform: scale(1.15); }
+.pd__color-btn--active {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--fg);
+}
+
+/* ---- Stock indicator ---- */
+.pd__stock { font-size: 0.85rem; }
+.pd__stock--ok  { color: #1a7a3c; }
+.pd__stock--low { color: #e65100; }
+.pd__stock--out { color: var(--accent); }
+
+/* ---- Add to cart button ---- */
+.pd__add-btn {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  padding: 1rem;
+  transition: background 0.2s, opacity 0.15s;
+}
+.pd__add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- Loading skeleton ---- */
+.pd-skeleton {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  padding-bottom: 5rem;
+}
+
+@media (max-width: 780px) {
+  .pd-skeleton { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+.pd-skeleton__image { aspect-ratio: 3/4; width: 100%; border-radius: 1rem; }
+.pd-skeleton__info  { display: flex; flex-direction: column; gap: 1rem; padding-top: 0.5rem; }
+.pd-skeleton__line  { height: 16px; width: 65%; }
+.pd-skeleton__line--title { height: 48px; width: 90%; }
+.pd-skeleton__line--short { width: 30%; }

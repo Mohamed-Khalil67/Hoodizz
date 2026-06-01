@@ -1,0 +1,94 @@
+/* ---- Each order line ---- */
+.order-detail__item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.order-detail__item:last-of-type { border-bottom: none; }
+
+/* ---- Thumbnail ---- */
+.order-detail__img-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--card);
+  flex-shrink: 0;
+}
+.order-detail__img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---- Info block ---- */
+.order-detail__item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.order-detail__item-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---- Meta row: qty, size, color ---- */
+.order-detail__item-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Pill tags for size / color */
+.order-detail__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+/* Color dot inside the color tag */
+.order-detail__color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+/* ---- Line total ---- */
+.order-detail__item-total {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ---- Grand total row ---- */
+.order-detail__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 700;
+  padding-block: 0.5rem;
+}
+
+/* ---- Order meta (status, date) ---- */
+.order-detail__meta {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 13px;
+  color: var(--muted);
+}

@@ -10,6 +10,12 @@ export class OrderItemInput {
 
   @Field(() => Float)
   price!: number;
+
+  @Field(() => String)
+  size!: string;      // required — never null
+
+  @Field(() => String)
+  color!: string;     // required — never null
 }
 
 @InputType()
@@ -19,9 +25,6 @@ export class CreateOrderInput {
 
   @Field(() => Float)
   totalAmount!: number;
-
-  // @Field(() => String)
-  // token!: string;
 }
 
 export interface CreateOrderServiceDto {

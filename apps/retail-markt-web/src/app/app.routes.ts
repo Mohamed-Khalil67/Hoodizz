@@ -12,6 +12,10 @@ export const appRoutes: Route[] = [
     loadComponent: () => import('./products/products').then((m) => m.Products),
   },
   {
+    path: 'products/:id',
+    loadComponent: () => import('./product-detail/product-detail').then((m) => m.ProductDetail),
+  },
+  {
     path: 'cart',
     loadComponent: () => import('./cart/cart').then((m) => m.Cart),
   },

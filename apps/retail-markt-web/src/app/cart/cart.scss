@@ -1,0 +1,106 @@
+.cart-page { padding-block: 4rem; max-width: 1280px; }
+
+.cart-page__title {
+  font-family: var(--display);
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.cart-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.cart-table { width: 100%; border-collapse: collapse; }
+
+.cart-table th,
+.cart-table td {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.cart-table th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--card);
+}
+
+.cart-table td { font-size: 0.9rem; }
+
+.cart-table__row { transition: background 0.15s; }
+.cart-table__row:hover { background: var(--card); }
+.cart-table__row:last-child td { border-bottom: none; }
+
+.cart-table__product {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cart-table__img-wrap {
+  width: 52px; height: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--card);
+  flex-shrink: 0;
+}
+
+.cart-table__img  { width: 100%; height: 100%; object-fit: cover; }
+.cart-table__name { font-weight: 600; font-size: 0.875rem; }
+
+/* ---- Size / color variant column ---- */
+.cart-table__variants {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cart-table__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg);
+  white-space: nowrap;
+}
+
+.cart-table__tag--color {
+  padding: 4px 6px;
+}
+
+.cart-table__color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  display: block;
+}
+
+.cart-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.cart-summary__total { font-size: 1.1rem; color: var(--muted); }
+.cart-summary__total strong { color: var(--fg); font-size: 1.4rem; }
+.cart-summary__actions { display: flex; gap: 1rem; flex-wrap: wrap; }

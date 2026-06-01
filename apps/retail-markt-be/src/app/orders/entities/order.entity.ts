@@ -17,7 +17,10 @@ export class Order {
   status!: OrderStatus;
 
   @Field(() => String, { nullable: true })
-  paymentId!: string;
+  paymentId?: string;
+
+  @Field(() => String, { nullable: true })
+  shippingAddress?: string;
 
   @Field(() => Date)
   createdAt!: Date;
