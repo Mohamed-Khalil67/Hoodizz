@@ -1,144 +1,134 @@
-# RetailMarktBe
+# Retail Markt
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A full-stack clothing e-commerce platform built with Angular (SSR) and NestJS, using an Nx monorepo.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+**Stack:** Angular 21 · NestJS 11 · GraphQL (Apollo) · Prisma 7 · PostgreSQL · Firebase Auth · Stripe
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+---
 
-## Generate a library
+## Apps
+
+| App                | Description               |
+| ------------------ | ------------------------- |
+| `retail-markt-web` | Angular frontend with SSR |
+| `retail-markt-be`  | NestJS GraphQL API        |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- Docker Desktop (for local PostgreSQL)
+- Nx CLI: `npm install -g nx`
+
+### Install dependencies
 
 ```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
+npm install
 ```
 
-## Run tasks
+### Environment variables
 
-To build the library use:
+Create `.env` in `apps/retail-markt-be/`:
 
-```sh
-npx nx build pkg1
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/retailmarkt
 ```
 
-To run any task with Nx use:
+### Run locally
 
 ```sh
+# Frontend (http://localhost:4200)
+nx serve retail-markt-web
+
+# Backend (http://localhost:3000/api)
+nx serve retail-markt-be
+```
+
+---
+
+## Database (Prisma)
+
+```sh
+# Navigate to backend app
+cd apps/retail-markt-be
+
+# Run migrations
+npx prisma migrate dev --name init
+
+# Generate Prisma client after schema changes
+npx prisma generate
+
+# Format schema
+npx prisma format
+
+# Seed the database
+npx ts-node ./prisma/seed.ts
+```
+
+> Note: Using Prisma v7 — the adapter must be declared. See `prisma.config.ts`.
+
+---
+
+## Build
+
+```sh
+# Frontend
+npx nx build retail-markt-web --configuration=production
+
+# Backend
+npx nx build retail-markt-be --configuration=production
+```
+
+---
+
+## Nx Workspace
+
+```sh
+# Run any target
 npx nx <target> <project-name>
-```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+# Visualize project graph
+npx nx graph
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
-
-```
-npx nx release
-```
-
-Pass `--dry-run` to see what would happen without actually releasing the library.
-
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Keep TypeScript project references up to date
-
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
-
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
-
-```sh
+# Sync TypeScript project references
 npx nx sync
 ```
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+---
 
-```sh
-npx nx sync:check
-```
+## Notes
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+- Creating a new Nx workspace: `npx create-nx-workspace` (create project name and skip everything else)
 
-## Set up CI!
+- Adding NestJS to the project: `nx add @nx/nest` (if nx is installed globally)
 
-### Step 1
+- Creating NestJS application: `nx g @nx/nest:app apps/retail-markt-be` (choose jest, linter)
 
-To connect to Nx Cloud, run the following command:
+- To activate the NestJS application: `nx serve retail-markt-be`
 
-```sh
-npx nx connect
-```
+- Install Prisma: `npm install prisma --save-dev`
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+- Docker Desktop is required to run the database in a container locally
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Create a new database in Neon and copy the connection string to the `.env` file in the backend application
 
-### Step 2
+- To create the Prisma schema: `npx prisma init` (run in `apps/retail-markt-be`)
 
-Use the following command to configure a CI workflow for your workspace:
+- After changing the Prisma schema, run: `npx prisma generate` (in `apps/retail-markt-be`). Use `npx prisma format` to format the schema file.
 
-```sh
-npx nx g ci-workflow
-```
+- Repair `seed.ts` and `productsList.ts`, then to create the seed data: `npx ts-node ./prisma/seed.ts` (in `apps/retail-markt-be` — also update `package.json` to add the seed command in the prisma section)
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- In `apps/retail-markt-be`, run `npx prisma migrate dev --name init`. Pay attention that we are using Prisma v7 not v6 — the adapter needs to be declared.
 
-## Install Nx Console
+- Setting up GraphQL: `npm i @nestjs/graphql @nestjs/apollo @apollo/server @as-integrations/express5 graphql`
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+- To generate the schema file for GraphQL, add `autoSchemaFile: join(process.cwd(), 'src/schema.gql')` in `app.module.ts` inside `GraphQLModule.forRoot()`. Also import `join` from `node:path`. Run the application and the schema file will be generated. Nx Daemon needs to be activated or restarted to see the changes.
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- To add Angular: `nx add @nx/angular` — also change a variable in `tsconfig.base.json` to `false`
 
-## Useful links
+- Firebase E2E Authentication flow: `npm install --legacy-peer-deps firebase @angular/fire`
 
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-# Notes:
-
-- Creating a new Nx workspace: npx create-nx-workspace ( create project name and skip everything else )
-
-- Adding nest to the project: nx add @nx/nest ( if nx is installed globally )
-
-- Creating Nestjs application: nx g @nx/nest:app apps/retail-markt-be ( chose jest , linter )
-
-- To activate the nest application: nx serve retail-markt-be
-
-- Install prisma: npm install prisma --save-dev
-
-- Docker desktop is required to run the database in a container
-
-- Create a new databse in neon and copy the immigration string to the .env file in the backend application
-
-- To create the prisma schema: npx prisma init ( in apps/retail-markt-be )
-
-- After changing the prisma schema, run: npx prisma generate ( in apps/retail-markt-be ) ( npx prisma format can be used to format the schema file )
-
-- repair the seed.Ts and productsList.ts, in order after to create the seed data: npx ts-node ./prisma/seed.ts ( in apps/retail-markt-be also change the package.json file to add the seed command in the prisma section )
-
-- in apps/retail-markt-be , run npx prisma migrate dev --name init, pay attention that we are using prisma v7 not v6 , dapater need to be declared.
-
-- Setting up Graph Ql , npm i @nestjs/graphql @nestjs/apollo @apollo/server @as-integrations/express5 graphql
-
-- In order to generate the schema file for GraphQL, we need to add autoSchemaFile: join(process.cwd(), 'src/schema.gql') in the app.module.ts file in the GraphQLModule.forRoot() method. Also we need to import join from node:path. After that we can run the application and the schema file will be generated in the src folder. Also NX Daomon needs to be activated or restarted in order to see the changes in the schema file.
-
-- In order to add Angular, nx add @nx/angular with changing a variable in tsconfig.base.json to false.
-
-- Firebase E2E Authentication flow, npm install --legacy-peer-deps firebase @angular/fire
-
-![alt text](image.png)
+![Architecture diagram](image.png)
