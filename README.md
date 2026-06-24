@@ -6,6 +6,29 @@ A full-stack clothing e-commerce platform built with Angular (SSR) and NestJS, u
 
 ---
 
+## 🚀 Live demo
+
+| | |
+|---|---|
+| **Frontend** | https://retail-markt.vercel.app *(set after deploy)* |
+| **Backend** | https://retail-markt-api.onrender.com *(set after deploy)* |
+| **Test card** | `4242 4242 4242 4242` — any future expiry, any CVC, any ZIP |
+
+> The backend runs on Render's free tier, which spins down after 15 min of
+> inactivity. The first request after sleep can take **20–30 seconds** to
+> wake — please be patient on cold loads. Once warm, response times are
+> sub-second.
+
+What you can try:
+- Browse the catalog at `/products`, filter by category
+- Sign up with email/password or Google
+- Add items to cart, go to `/checkout`
+- Complete a Stripe test-mode payment with the card above
+- Check your order at `/orders` — status will flip to `PENDING` once the
+  Stripe webhook fires
+
+---
+
 ## Apps
 
 | App                | Description               |
@@ -131,4 +154,4 @@ npx nx sync
 
 - Firebase E2E Authentication flow: `npm install --legacy-peer-deps firebase @angular/fire`
 
-![Architecture diagram](image.png)
+![Architecture diagram](docs/image.png)

@@ -46,6 +46,16 @@ test-output
 .angular
 
 .env
+.env.local
+.env.*.local
+!.env.example
+
+# Firebase admin credentials — NEVER commit
+service-account.json
+**/service-account.json
+**/firebase-adminsdk-*.json
 
 .claude
 .agents
+
+docs

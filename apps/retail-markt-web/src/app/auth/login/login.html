@@ -5,6 +5,10 @@
       <p class="auth-card__subtitle">Sign in to your Hoodizz account</p>
     </div>
 
+    @if (errorMessage()) {
+      <div class="alert alert--error" role="alert">{{ errorMessage() }}</div>
+    }
+
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="auth-form">
       <div class="form-group">
         <label for="emailInput" class="form-label">Email</label>

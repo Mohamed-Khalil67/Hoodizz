@@ -1,32 +1,53 @@
-import { IsArray, IsNumber, IsString, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsInt,
+  IsNumber,
+  IsString,
+  IsUUID,
+  Length,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CartItemDto {
-  @IsString()
+  @IsUUID('4')
   productId!: string;
 
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(1000)
   quantity!: number;
 
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
   price!: number;
 
   @IsString()
+  @Length(1, 200)
   name!: string;
 
   @IsString()
-  size!: string;    // required — never null
+  @Length(1, 20)
+  size!: string;
 
   @IsString()
-  color!: string;   // required — never null
+  @Length(1, 50)
+  color!: string;
 }
 
 export class CreateCheckoutDto {
   @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(100)
   @ValidateNested({ each: true })
   @Type(() => CartItemDto)
   items!: CartItemDto[];
 
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.5)
   totalAmount!: number;
 }

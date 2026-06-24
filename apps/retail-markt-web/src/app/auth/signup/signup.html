@@ -5,6 +5,10 @@
       <p class="auth-card__subtitle">Join the Hoodizz community</p>
     </div>
 
+    @if (errorMessage()) {
+      <div class="alert alert--error" role="alert">{{ errorMessage() }}</div>
+    }
+
     <form (ngSubmit)="onSubmit()" #signupForm="ngForm" class="auth-form">
       <div class="form-group">
         <label for="emailInput" class="form-label">Email</label>

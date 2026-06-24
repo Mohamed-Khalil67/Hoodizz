@@ -1,55 +1,49 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+
 import { OrdersService } from './orders.service';
 import { Order } from './entities/order.entity';
-import { CreateOrderInput } from './dto/create-order.input';
 import { DeleteOrderResp } from './dto/delete-order-resp';
-import { UpdateOrderInput } from './dto/update-order.input';
-import { FirebaseService } from '../firebase/firebase.service';
-import { UnauthorizedException } from '@nestjs/common';
+import { PaginationArgs } from './dto/paginated-orders.input';
+import { FirebaseAuthGuard } from '../firebase/firebase-auth.guard';
+import { CurrentUserId } from '../firebase/current-user.decorator';
 
+/**
+ * Order creation is intentionally NOT exposed as a GraphQL mutation.
+ * The only legitimate way to create an order is `POST /api/checkout`, which
+ * routes through `OrdersService.createWithStockReservation` (transactional
+ * stock decrement + Stripe session). Likewise, status mutation is handled by
+ * the Stripe webhook controller — customers should never be able to flip
+ * their own order to DELIVERED via GraphQL.
+ */
 @Resolver(() => Order)
 export class OrdersResolver {
-  constructor(
-    private readonly ordersService: OrdersService,
-    private readonly firebaseService: FirebaseService,
-  ) {}
+  constructor(private readonly ordersService: OrdersService) {}
 
-  @Mutation(() => Order)
-  createOrder(@Args('createOrderInput') createOrderInput: CreateOrderInput) {
-    return this.ordersService.create(createOrderInput);
-  }
-
+  @UseGuards(FirebaseAuthGuard)
   @Query(() => [Order], { name: 'userOrders' })
-  async findUserOrders(@Args('token', { type: () => String }) token: string) {
-    // console.log('token in backend userOrders:', token);
-    const userId = await this.firebaseService.verifyToken(token);
-    if (!userId) {
-      throw new UnauthorizedException('Invalid or expired Token');
-    }
-    // console.log('userId in backend userOrders:', userId);
-    return this.ordersService.findUserOrders(userId);
-  }
-
-  @Query(() => [Order], { name: 'orders' })
-  findAll() {
-    return this.ordersService.findAll();
-  }
-
-  @Query(() => Order, { name: 'order' })
-  findOne(@Args('id', { type: () => String }) id: string) {
-    return this.ordersService.findOne(id);
-  }
-
-  @Mutation(() => Order)
-  updateOrder(
-    @Args('updateOrderInput', { type: () => UpdateOrderInput })
-    updateOrderInput: UpdateOrderInput,
+  findUserOrders(
+    @CurrentUserId() userId: string,
+    @Args() pagination: PaginationArgs,
   ) {
-    return this.ordersService.update(updateOrderInput.id, updateOrderInput);
+    return this.ordersService.findUserOrders(userId, pagination);
   }
 
+  @UseGuards(FirebaseAuthGuard)
+  @Query(() => Order, { name: 'order' })
+  findOne(
+    @Args('id', { type: () => String }) id: string,
+    @CurrentUserId() userId: string,
+  ) {
+    return this.ordersService.findOneForUser(id, userId);
+  }
+
+  @UseGuards(FirebaseAuthGuard)
   @Mutation(() => DeleteOrderResp)
-  removeUnpaidOrder(@Args('id', { type: () => String }) id: string) {
-    return this.ordersService.removeUnpaid(id);
+  removeUnpaidOrder(
+    @Args('id', { type: () => String }) id: string,
+    @CurrentUserId() userId: string,
+  ) {
+    return this.ordersService.removeUnpaid(id, { userId });
   }
 }

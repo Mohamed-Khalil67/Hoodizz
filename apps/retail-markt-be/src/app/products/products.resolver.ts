@@ -1,24 +1,24 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Throttle } from '@nestjs/throttler';
+
 import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
-import { CreateProductInput } from './dto/create-product.input';
-import { UpdateProductInput } from './dto/update-product.input';
+import { FindProductsArgs, SearchProductsArgs } from './dto/find-products.args';
+import { RATE_LIMIT } from '../common/constants';
 
+/**
+ * Catalog reads only. Product create/update/delete are admin operations and
+ * intentionally not exposed via GraphQL yet — once the admin module exists,
+ * they should be re-introduced behind a `@Roles('admin')` guard. Until then,
+ * use `npx prisma db seed` or direct DB writes for catalog management.
+ */
 @Resolver(() => Product)
 export class ProductsResolver {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Mutation(() => Product)
-  createProduct(@Args('createProductInput') createProductInput: CreateProductInput) {
-    return this.productsService.create(createProductInput);
-  }
-
   @Query(() => [Product], { name: 'products' })
-  findAll(
-    @Args('featured',  { type: () => Boolean, nullable: true }) featured?: boolean,
-    @Args('category',  { type: () => String,  nullable: true }) category?: string,
-  ) {
-    return this.productsService.findAll({ featured, category });
+  findAll(@Args() args: FindProductsArgs) {
+    return this.productsService.findAll(args);
   }
 
   @Query(() => Product, { name: 'product' })
@@ -31,18 +31,17 @@ export class ProductsResolver {
     return this.productsService.getCategories();
   }
 
+  @Throttle({
+    default: {
+      ttl: RATE_LIMIT.SEARCH_TTL_MS,
+      limit: RATE_LIMIT.SEARCH_LIMIT,
+    },
+  })
   @Query(() => [Product], { name: 'searchProducts' })
-  searchProducts(@Args('term', { type: () => String }) term: string) {
-    return this.productsService.searchProducts(term);
-  }
-
-  @Mutation(() => Product)
-  updateProduct(@Args('updateProductInput') updateProductInput: UpdateProductInput) {
-    return this.productsService.update(updateProductInput.id, updateProductInput);
-  }
-
-  @Mutation(() => Product)
-  removeProduct(@Args('id', { type: () => String }) id: string) {
-    return this.productsService.remove(id);
+  searchProducts(@Args() args: SearchProductsArgs) {
+    return this.productsService.searchProducts(args.term, {
+      take: args.take,
+      skip: args.skip,
+    });
   }
 }

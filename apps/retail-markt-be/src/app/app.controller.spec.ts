@@ -1,21 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 
-describe('AppController', () => {
-  let app: TestingModule;
+describe('AppController (/health)', () => {
+  let controller: AppController;
 
   beforeAll(async () => {
-    app = await Test.createTestingModule({
+    const module: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
     }).compile();
+    controller = module.get(AppController);
   });
 
-  describe('getData', () => {
-    it('should return "Hello API"', () => {
-      const appController = app.get<AppController>(AppController);
-      expect(appController.getData()).toEqual({ message: 'Hello API' });
-    });
+  it('returns ok status with uptime', () => {
+    const result = controller.health();
+    expect(result.status).toBe('ok');
+    expect(typeof result.uptime).toBe('number');
+    expect(result.uptime).toBeGreaterThanOrEqual(0);
   });
 });

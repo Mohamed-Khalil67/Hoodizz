@@ -1,33 +1,42 @@
 import { Injectable } from '@nestjs/common';
+import { Product } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
-import { PrismaService } from '../prisma/prisma.service';
-import { Product } from '@prisma/client';
+import { ProductNotFoundException } from '../common/exceptions';
+import { PAGINATION_DEFAULTS } from '../common/constants';
 
-type FindConfig = {
+export interface FindProductsArgs {
   featured?: boolean;
   category?: string;
-};
+  take?: number;
+  skip?: number;
+}
 
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createProductInput: CreateProductInput) {
-    return this.prisma.product.create({ data: createProductInput });
+  create(input: CreateProductInput) {
+    return this.prisma.product.create({ data: input });
   }
 
-  findAll(config: FindConfig = {}) {
+  findAll(args: FindProductsArgs = {}) {
     return this.prisma.product.findMany({
       where: {
-        ...(config.featured !== undefined ? { isFeatured: true } : {}),
-        ...(config.category ? { category: config.category } : {}),
+        ...(args.featured !== undefined ? { isFeatured: args.featured } : {}),
+        ...(args.category ? { category: args.category } : {}),
       },
+      take: args.take ?? PAGINATION_DEFAULTS.TAKE,
+      skip: args.skip ?? PAGINATION_DEFAULTS.SKIP,
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.product.findFirst({ where: { id } });
+  async findOne(id: string) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) throw new ProductNotFoundException(id);
+    return product;
   }
 
   async getCategories(): Promise<string[]> {
@@ -39,25 +48,35 @@ export class ProductsService {
     return rows.map((r) => r.category);
   }
 
-  async searchProducts(term: string): Promise<Product[]> {
-    const lowercaseTerm = term.toLowerCase();
+  async searchProducts(
+    term: string,
+    args?: { take?: number; skip?: number },
+  ): Promise<Product[]> {
+    const trimmed = term.trim();
+    if (!trimmed) return [];
+
     return this.prisma.product.findMany({
       where: {
         OR: [
-          { name:        { contains: lowercaseTerm, mode: 'insensitive' } },
-          { description: { contains: lowercaseTerm, mode: 'insensitive' } },
-          { category:    { contains: lowercaseTerm, mode: 'insensitive' } },
+          { name: { contains: trimmed, mode: 'insensitive' } },
+          { description: { contains: trimmed, mode: 'insensitive' } },
+          { category: { contains: trimmed, mode: 'insensitive' } },
         ],
       },
+      take: args?.take ?? PAGINATION_DEFAULTS.TAKE,
+      skip: args?.skip ?? PAGINATION_DEFAULTS.SKIP,
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  update(id: string, updateProductInput: UpdateProductInput) {
-    const { id: _id, ...data } = updateProductInput;
+  async update(id: string, input: UpdateProductInput) {
+    await this.findOne(id);
+    const { id: _ignored, ...data } = input;
     return this.prisma.product.update({ where: { id }, data });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    await this.findOne(id);
     return this.prisma.product.delete({ where: { id } });
   }
 }

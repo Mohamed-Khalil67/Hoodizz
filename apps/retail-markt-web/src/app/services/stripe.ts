@@ -1,17 +1,23 @@
 import { inject, Injectable } from '@angular/core';
-import { CartStore } from '../stores/cart.store';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../auth/auth.service';
 import { from, switchMap } from 'rxjs';
-import { environment } from '../environments/environment';
 
-@Injectable({
-  providedIn: 'root',
-})
+import { CartStore } from '../stores/cart.store';
+import { AuthService } from '../auth/auth.service';
+import { environment } from '../environments/environment';
+import { API_PATHS } from '../app.constants';
+
+export interface CheckoutResponse {
+  url: string;
+  sessionId: string;
+  orderId: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class StripeService {
-  cartStore = inject(CartStore);
-  http = inject(HttpClient);
-  auth = inject(AuthService);
+  private readonly cartStore = inject(CartStore);
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
 
   createCheckoutSession() {
     const items = this.cartStore.items();
@@ -19,23 +25,21 @@ export class StripeService {
 
     return from(this.auth.getToken()).pipe(
       switchMap((token) =>
-        this.http.post<{ url: string }>(
-          `${environment.apiUrl}/api/checkout`,
+        this.http.post<CheckoutResponse>(
+          `${environment.apiUrl}${API_PATHS.CHECKOUT}`,
           {
             items: items.map((item) => ({
               productId: item.id,
               name: item.name,
               price: item.price,
               quantity: item.quantity,
-              size: item.selectedSize ?? undefined,
-              color: item.selectedColor ?? undefined,
+              size: item.selectedSize,
+              color: item.selectedColor,
             })),
             totalAmount,
           },
           {
-            headers: {
-              Authorization: token ? `Bearer ${token}` : '',
-            },
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
           },
         ),
       ),

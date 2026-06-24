@@ -1,9 +1,12 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { User } from '@angular/fire/auth';
+
 import { CartStore } from '../../stores/cart.store';
 import { AuthService } from '../../auth/auth.service';
-import { User } from '@angular/fire/auth';
+
+const CART_BOUNCE_DURATION_MS = 1000;
 
 @Component({
   selector: 'app-header',
@@ -12,20 +15,21 @@ import { User } from '@angular/fire/auth';
   styleUrl: './header.scss',
 })
 export class Header {
-  cartStore = inject(CartStore);
-  previousCount = 0;
-  isCartBouncing = signal(false);
-  auth = inject(AuthService);
-  currentUser$ = this.auth.currentUser$;
+  readonly cartStore = inject(CartStore);
+  readonly auth = inject(AuthService);
+  readonly currentUser$ = this.auth.currentUser$;
+
+  readonly isCartBouncing = signal(false);
   isDropdownOpen = false;
+
+  private previousCount = 0;
 
   constructor() {
     effect(() => {
-      // this is made to trigger the bounce animation when an item is added to the cart
       const currentCount = this.cartStore.totalItems();
       if (currentCount > this.previousCount) {
         this.isCartBouncing.set(true);
-        setTimeout(() => this.isCartBouncing.set(false), 1000);
+        setTimeout(() => this.isCartBouncing.set(false), CART_BOUNCE_DURATION_MS);
       }
       this.previousCount = currentCount;
     });
@@ -47,11 +51,7 @@ export class Header {
   }
 
   async logout() {
-    try {
-      await this.auth.logout();
-      this.isDropdownOpen = false;
-    } catch (e) {
-      console.error('Logout error:', e);
-    }
+    await this.auth.logout();
+    this.isDropdownOpen = false;
   }
 }

@@ -1,13 +1,15 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Product } from '@prisma/client';
-import { CartStore } from '../../stores/cart.store';
 
-export type CartAddEvent = {
-  product:       Product;
-  selectedSize:  string;
+import { CartStore } from '../../stores/cart.store';
+import { useVariantSelection } from '../variant-selector/use-variant-selection';
+
+export interface CartAddEvent {
+  product: Product;
+  selectedSize: string;
   selectedColor: string;
-};
+}
 
 @Component({
   selector: 'app-product-card',
@@ -16,36 +18,30 @@ export type CartAddEvent = {
   styleUrl: './product-card.scss',
 })
 export class ProductCard {
-  product   = input.required<Product>();
-  addToCart = output<CartAddEvent>();
-  cartStore = inject(CartStore);
+  readonly product = input.required<Product>();
+  readonly addToCart = output<CartAddEvent>();
 
-  selectedSize  = signal<string | null>(null);
-  selectedColor = signal<string | null>(null);
-  attempted     = signal(false);   // true after first failed add attempt
+  private readonly cartStore = inject(CartStore);
+  private readonly variants = useVariantSelection();
 
-  selectSize(size: string) {
-    this.selectedSize.set(this.selectedSize() === size ? null : size);
-  }
+  readonly selectedSize = this.variants.selectedSize;
+  readonly selectedColor = this.variants.selectedColor;
+  readonly attempted = this.variants.attempted;
+  readonly canAdd = this.variants.canAdd;
 
-  selectColor(color: string) {
-    this.selectedColor.set(this.selectedColor() === color ? null : color);
-  }
-
-  get canAdd(): boolean {
-    return !!this.selectedSize() && !!this.selectedColor();
-  }
+  selectSize = (size: string) => this.variants.toggleSize(size);
+  selectColor = (color: string) => this.variants.toggleColor(color);
 
   onAddToCart() {
-    if (!this.canAdd) {
-      this.attempted.set(true);   // reveal hints only after clicking
+    if (!this.canAdd()) {
+      this.variants.markAttempted();
       return;
     }
-    const product      = this.product();
-    const selectedSize  = this.selectedSize()!;
+    const product = this.product();
+    const selectedSize = this.selectedSize()!;
     const selectedColor = this.selectedColor()!;
     this.cartStore.addToCartStore(product, 1, selectedSize, selectedColor);
     this.addToCart.emit({ product, selectedSize, selectedColor });
-    this.attempted.set(false);
+    this.variants.reset();
   }
 }

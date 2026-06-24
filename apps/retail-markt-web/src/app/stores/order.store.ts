@@ -1,10 +1,9 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { Order, OrderItem, OrderStatus, Product } from '@prisma/client';
+import { Order, OrderItem, Product } from '@prisma/client';
 import { Apollo, gql } from 'apollo-angular';
-import { catchError, EMPTY, from, map, pipe, switchMap, tap } from 'rxjs';
-import { AuthService } from '../auth/auth.service';
+import { catchError, EMPTY, map, pipe, switchMap, tap } from 'rxjs';
 
 const ORDER_ITEM_FIELDS = `
   id
@@ -19,31 +18,17 @@ const ORDER_ITEM_FIELDS = `
   }
 `;
 
-const GET_ORDER = gql`
-  query GetOrder($id: String!) {
-    order(id: $id) {
-      id
-      totalAmount
-      status
-      items {
-        ${ORDER_ITEM_FIELDS}
-      }
-      createdAt
-    }
-  }
+const ORDER_FIELDS = `
+  id
+  totalAmount
+  status
+  items { ${ORDER_ITEM_FIELDS} }
+  createdAt
 `;
 
-const UPDATE_ORDER = gql`
-  mutation UpdateOrderStatus($updateOrder: UpdateOrderInput!) {
-    updateOrder(updateOrderInput: $updateOrder) {
-      id
-      totalAmount
-      status
-      items {
-        ${ORDER_ITEM_FIELDS}
-      }
-      createdAt
-    }
+const GET_ORDER = gql`
+  query GetOrder($id: String!) {
+    order(id: $id) { ${ORDER_FIELDS} }
   }
 `;
 
@@ -58,16 +43,8 @@ const DELETE_UNPAID_ORDER = gql`
 `;
 
 const GET_USER_ORDERS = gql`
-  query GetUserOrders($token: String!) {
-    userOrders(token: $token) {
-      id
-      totalAmount
-      status
-      items {
-        ${ORDER_ITEM_FIELDS}
-      }
-      createdAt
-    }
+  query GetUserOrders($take: Int, $skip: Int) {
+    userOrders(take: $take, skip: $skip) { ${ORDER_FIELDS} }
   }
 `;
 
@@ -94,77 +71,71 @@ const initialState: OrderState = {
 };
 
 export const OrderStore = signalStore(
-  {
-    providedIn: 'root',
-  },
+  { providedIn: 'root' },
   withState(() => initialState),
-  withMethods((store, apollo = inject(Apollo), auth = inject(AuthService)) => ({
+  withMethods((store, apollo = inject(Apollo)) => ({
     getOrder(id: string) {
       patchState(store, { error: null });
       return apollo
         .query<{ order: OrderWithItems }>({
           query: GET_ORDER,
           variables: { id },
+          fetchPolicy: 'network-only',
         })
         .pipe(
           tap({
-            next: ({ data }) => patchState(store, { orderDetail: data?.order }),
+            next: ({ data }) =>
+              patchState(store, { orderDetail: data?.order ?? null }),
             error: (error) => patchState(store, { error: error.message }),
           }),
           map(({ data }) => data?.order as OrderWithItems),
         );
     },
-    getUserOrders() {
+
+    getUserOrders(args: { take?: number; skip?: number } = {}) {
       patchState(store, { loading: true, error: null });
-      return from(auth.getToken()).pipe(
-        switchMap((token) => {
-          if (!token) {
-            throw new Error('User not authenticated');
-          }
-          return apollo.query<{ userOrders: OrderWithItems[] }>({
-            query: GET_USER_ORDERS,
-            variables: { token },
-          });
-        }),
-        tap((result) => {
-          patchState(store, {
-            orders: result.data?.userOrders,
-            loading: false,
-            error: null,
-          });
-        }),
-        catchError((err) => {
-          patchState(store, { error: err.message, loading: false });
-          return EMPTY;
-        }),
-      );
-    },
-    updateOrder: rxMethod<{ id: string; status: OrderStatus }>(
-      pipe(
-        switchMap(({ id, status }) =>
-          apollo.mutate<{ updateOrder: OrderWithItems }>({
-            mutation: UPDATE_ORDER,
-            variables: { updateOrder: { id, status } },
+      return apollo
+        .query<{ userOrders: OrderWithItems[] }>({
+          query: GET_USER_ORDERS,
+          variables: { take: args.take ?? 20, skip: args.skip ?? 0 },
+          fetchPolicy: 'network-only',
+        })
+        .pipe(
+          tap((result) => {
+            patchState(store, {
+              orders: result.data?.userOrders ?? [],
+              loading: false,
+              error: null,
+            });
           }),
-        ),
-      ),
-    ),
+          catchError((err) => {
+            patchState(store, { error: err.message, loading: false });
+            return EMPTY;
+          }),
+        );
+    },
+
     removeUnpaidOrder: rxMethod<string>(
       pipe(
         switchMap((id) =>
-          apollo.mutate<{ updateOrder: OrderWithItems }>({
+          apollo.mutate<{
+            removeUnpaidOrder: {
+              success: boolean;
+              orderId: string;
+              error?: string;
+            };
+          }>({
             mutation: DELETE_UNPAID_ORDER,
             variables: { id },
           }),
         ),
         tap({
-          next: ({ data }) => {
-            patchState(store, { error: null });
-          },
+          next: () => patchState(store, { error: null }),
           error: (error) => patchState(store, { error: error.message }),
         }),
       ),
     ),
+
     setError(error: string) {
       patchState(store, { error });
     },

@@ -20,6 +20,9 @@ model Product {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   orderItems    OrderItem[]
+
+  @@index([category])
+  @@index([isFeatured])
 }
 
 model Order {
@@ -32,6 +35,11 @@ model Order {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   items           OrderItem[]
+
+  @@index([userId])
+  @@index([paymentId])
+  @@index([status])
+  @@index([userId, status])
 }
 
 model OrderItem {
