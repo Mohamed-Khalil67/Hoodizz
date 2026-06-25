@@ -2,18 +2,14 @@ const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const webpack = require('webpack');
 const { join } = require('path');
 
-// Optional dependencies that NestJS / Apollo / GraphQL soft-require but
-// we don't actually use. They aren't installed and we want webpack to
-// skip them entirely rather than fail or leave external require()s in
-// the bundle that crash at cold-start.
+// Optional dependencies that NestJS / Apollo / GraphQL / firebase-admin
+// soft-require but we don't actually use. They aren't installed (or have
+// ESM-only exports webpack can't resolve in CJS mode) and we want webpack
+// to skip them entirely rather than fail the build.
 const OPTIONAL_MODULES = new RegExp(
   '^(' +
     [
-      '@apollo/subgraph',
-      '@apollo/gateway',
-      '@as-integrations/fastify',
-      'ts-morph',
-      'class-transformer/storage',
+      // NestJS optional transports we don't use
       '@nestjs/microservices',
       '@nestjs/websockets',
       '@grpc/grpc-js',
@@ -25,8 +21,31 @@ const OPTIONAL_MODULES = new RegExp(
       'ioredis',
       'kafkajs',
       'cache-manager',
+      // Apollo federation we don't use
+      '@apollo/subgraph',
+      '@apollo/gateway',
+      '@as-integrations/fastify',
+      // GraphQL tooling not needed at runtime
+      'ts-morph',
+      'class-transformer/storage',
+      // ws optional native modules
       'bufferutil',
       'utf-8-validate',
+      // pg optional native binding (we use the pure-JS path)
+      'pg-native',
+      // firebase-admin transitively pulls Firestore/Storage/GAX but we
+      // only use Auth — strip the rest to keep the bundle building.
+      '@google-cloud/firestore',
+      '@google-cloud/storage',
+      '@google-cloud/paginator',
+      '@google-cloud/projectify',
+      '@google-cloud/promisify',
+      'google-gax',
+      'gtoken',
+      'teeny-request',
+      'proto3-json-serializer',
+      // file-type is ESM-only via package.json exports field
+      'file-type',
     ].join('|') +
     ')(/.*)?$',
 );
