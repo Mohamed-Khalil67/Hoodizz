@@ -3,6 +3,7 @@
   "framework": null,
   "installCommand": "cd ../.. && npm install --legacy-peer-deps",
   "buildCommand": "cd ../.. && npx prisma generate --schema apps/retail-markt-be/prisma/schema.prisma && npx nx build retail-markt-be --configuration=production",
+  "outputDirectory": "public",
   "functions": {
     "api/[...slug].js": {
       "maxDuration": 30,
