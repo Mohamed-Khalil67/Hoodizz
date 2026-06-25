@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { json, raw, Express } from 'express';
+import serverless from 'serverless-http';
 
 import { AppModule } from './app/app.module';
 import { isProduction, loadEnv } from './app/common/env.config';
@@ -80,7 +81,7 @@ async function bootstrap() {
 }
 
 // Skip listen() when running on Vercel — the api/[...slug].js function
-// imports createApp() and wraps it with serverless-http instead.
+// imports vercelHandler() from this bundle instead.
 if (!process.env['VERCEL']) {
   bootstrap().catch((err) => {
     Logger.error(
@@ -89,4 +90,17 @@ if (!process.env['VERCEL']) {
     );
     process.exit(1);
   });
+}
+
+// Cached serverless handler — built lazily on first invocation and
+// reused across warm Lambda invocations.
+let cachedVercel: ReturnType<typeof serverless> | null = null;
+
+export async function vercelHandler(req: unknown, res: unknown) {
+  if (!cachedVercel) {
+    const expressApp = await createApp();
+    cachedVercel = serverless(expressApp);
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (cachedVercel as any)(req, res);
 }
