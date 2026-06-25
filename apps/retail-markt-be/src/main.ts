@@ -11,11 +11,15 @@ import { isProduction, loadEnv } from './app/common/env.config';
 const GLOBAL_PREFIX = 'api';
 
 export async function createApp(): Promise<Express> {
+  const tEnv = Date.now();
   loadEnv();
+  console.log(`[INIT] loadEnv ok (+${Date.now() - tEnv}ms)`);
 
+  const tNest = Date.now();
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    bufferLogs: true,
+    bufferLogs: false,
   });
+  console.log(`[INIT] NestFactory.create ok (+${Date.now() - tNest}ms)`);
 
   const env = loadEnv();
 
@@ -52,7 +56,9 @@ export async function createApp(): Promise<Express> {
     exclude: ['health'],
   });
 
+  const tInit = Date.now();
   await app.init();
+  console.log(`[INIT] app.init ok (+${Date.now() - tInit}ms)`);
 
   return app.getHttpAdapter().getInstance() as Express;
 }
