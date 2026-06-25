@@ -1,53 +1,49 @@
-// Vercel serverless entry — wraps the bundled NestJS Express app.
-// The bundle is produced by `npx nx build retail-markt-be` and lives at
-// ../dist/main.js. main.ts exports createApp() and skips listen() when
-// VERCEL=1 is set in the environment.
+// Diagnostic version — zero requires at module level. If even THIS
+// times out, the problem is the Vercel function bundle/runtime itself,
+// not anything in our Nest code.
 
 const tBoot = Date.now();
-console.log('[FN] module load start');
-const serverless = require('serverless-http');
-console.log(`[FN] serverless-http loaded (+${Date.now() - tBoot}ms)`);
 
 let cachedHandler;
-let initError;
+let initStatus = 'pending';
+let initError = null;
 
-async function getHandler() {
+async function ensureHandler() {
   if (cachedHandler) return cachedHandler;
   if (initError) throw initError;
-  const tReq = Date.now();
   try {
-    console.log('[FN] requiring dist/main.js');
+    initStatus = 'loading-serverless';
+    const serverless = require('serverless-http');
+    initStatus = 'loading-main';
     const { createApp } = require('../dist/main.js');
-    console.log(`[FN] dist/main.js required (+${Date.now() - tReq}ms)`);
-
-    const tApp = Date.now();
-    console.log('[FN] calling createApp');
+    initStatus = 'creating-app';
     const expressApp = await createApp();
-    console.log(`[FN] createApp resolved (+${Date.now() - tApp}ms)`);
-
+    initStatus = 'wrapping';
     cachedHandler = serverless(expressApp);
-    console.log('[FN] handler ready');
+    initStatus = 'ready';
     return cachedHandler;
   } catch (err) {
     initError = err;
-    console.error('[FN] init failed:', err && err.stack ? err.stack : err);
+    initStatus = 'failed';
     throw err;
   }
 }
 
 module.exports = async (req, res) => {
-  console.log(`[FN] request ${req.method} ${req.url}`);
+  const url = req.url || '';
 
-  // Diagnostic bypass — responds without touching Nest. If this works
-  // but /api/graphql times out, the problem is Nest init, not the function.
-  if (req.url && req.url.startsWith('/api/_debug')) {
+  // Default: return immediately with diagnostic info. Nest is only
+  // invoked when the path starts with /api/nest/ — this proves the
+  // function itself can respond.
+  if (!url.startsWith('/api/nest/')) {
     res.statusCode = 200;
     res.setHeader('content-type', 'application/json');
     return res.end(
       JSON.stringify({
         ok: true,
+        url: req.url,
         bootMs: Date.now() - tBoot,
-        cachedHandler: !!cachedHandler,
+        initStatus,
         initError: initError ? String(initError) : null,
         env: {
           NODE_ENV: process.env.NODE_ENV,
@@ -62,8 +58,10 @@ module.exports = async (req, res) => {
     );
   }
 
+  // /api/nest/* — invoke Nest. Strip the /nest segment.
+  req.url = url.replace('/api/nest', '/api');
   try {
-    const handler = await getHandler();
+    const handler = await ensureHandler();
     return handler(req, res);
   } catch (err) {
     res.statusCode = 500;
@@ -71,15 +69,13 @@ module.exports = async (req, res) => {
     return res.end(
       JSON.stringify({
         error: 'Nest init failed',
+        initStatus,
         message: err && err.message ? err.message : String(err),
       }),
     );
   }
 };
 
-// Disable Vercel's automatic body parsing so the Stripe webhook receives
-// raw bytes — express.raw() in createApp() handles parsing for that route,
-// and express.json() handles every other route.
 module.exports.config = {
   api: { bodyParser: false },
 };
