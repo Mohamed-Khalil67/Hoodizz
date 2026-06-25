@@ -33,10 +33,11 @@ import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
     ]),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(
-        process.cwd(),
-        'apps/retail-markt-be/dist/schema.gql',
-      ),
+      // Vercel functions run in a read-only filesystem; keep the schema in
+      // memory there. Local dev still writes to dist/ for tooling.
+      autoSchemaFile: process.env['VERCEL']
+        ? true
+        : join(process.cwd(), 'apps/retail-markt-be/dist/schema.gql'),
       playground: !isProduction(),
       introspection: !isProduction(),
       context: ({ req, res }: { req: Request; res: Response }) => ({

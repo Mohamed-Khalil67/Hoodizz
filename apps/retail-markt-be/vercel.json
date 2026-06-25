@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "cd ../.. && npm install --legacy-peer-deps",
+  "buildCommand": "cd ../.. && npx prisma generate --schema apps/retail-markt-be/prisma/schema.prisma && npx nx build retail-markt-be --configuration=production",
+  "functions": {
+    "api/[...slug].js": {
+      "maxDuration": 30,
+      "memory": 1024,
+      "includeFiles": "dist/**"
+    }
+  }
+}

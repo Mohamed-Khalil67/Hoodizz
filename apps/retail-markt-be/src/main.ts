@@ -3,12 +3,14 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
-import { json, raw } from 'express';
+import { json, raw, Express } from 'express';
 
 import { AppModule } from './app/app.module';
 import { isProduction, loadEnv } from './app/common/env.config';
 
-async function bootstrap() {
+const GLOBAL_PREFIX = 'api';
+
+export async function createApp(): Promise<Express> {
   loadEnv();
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -16,10 +18,9 @@ async function bootstrap() {
   });
 
   const env = loadEnv();
-  const globalPrefix = 'api';
 
   app.use(
-    `/${globalPrefix}/stripe/webhook`,
+    `/${GLOBAL_PREFIX}/stripe/webhook`,
     raw({ type: 'application/json', limit: '1mb' }),
   );
   app.use(json({ limit: '1mb' }));
@@ -47,23 +48,39 @@ async function bootstrap() {
     }),
   );
 
-  app.setGlobalPrefix(globalPrefix, {
+  app.setGlobalPrefix(GLOBAL_PREFIX, {
     exclude: ['health'],
   });
 
-  await app.listen(env.PORT);
+  await app.init();
 
-  Logger.log(
-    `🚀 Application running on http://localhost:${env.PORT}/${globalPrefix}`,
-    'Bootstrap',
-  );
-  Logger.log(
-    `   Env: ${env.NODE_ENV} | GraphQL playground: ${!isProduction()}`,
-    'Bootstrap',
-  );
+  return app.getHttpAdapter().getInstance() as Express;
 }
 
-bootstrap().catch((err) => {
-  Logger.error('Fatal bootstrap error', err instanceof Error ? err.stack : err);
-  process.exit(1);
-});
+async function bootstrap() {
+  const expressApp = await createApp();
+  const env = loadEnv();
+
+  expressApp.listen(env.PORT, () => {
+    Logger.log(
+      `🚀 Application running on http://localhost:${env.PORT}/${GLOBAL_PREFIX}`,
+      'Bootstrap',
+    );
+    Logger.log(
+      `   Env: ${env.NODE_ENV} | GraphQL playground: ${!isProduction()}`,
+      'Bootstrap',
+    );
+  });
+}
+
+// Skip listen() when running on Vercel — the api/[...slug].js function
+// imports createApp() and wraps it with serverless-http instead.
+if (!process.env['VERCEL']) {
+  bootstrap().catch((err) => {
+    Logger.error(
+      'Fatal bootstrap error',
+      err instanceof Error ? err.stack : err,
+    );
+    process.exit(1);
+  });
+}
